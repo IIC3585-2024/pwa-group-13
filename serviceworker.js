@@ -3,6 +3,8 @@ const staticAssets = [
   './index.html',
   './styles.css',
   './app.js',
+  './spliti.js',
+  './db.js',
   // Íconos Android comunes
   './images/icons/android/android-launchericon-192-192.png',
   './images/icons/android/android-launchericon-512-512.png',
@@ -52,5 +54,7 @@ async function networkFirst(request) {
       return await cache.match(request);
 
   }
+
+
 
 }

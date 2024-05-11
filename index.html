@@ -1,18 +1,50 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="./images/pizza.png" type="image/png">
   <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+
   <title>Spliti</title>
+  <script src="./db.js" defer></script>
+  <script src="./spliti.js" defer></script>
 </head>
-<body>
-  <div class="bg-red-500">
-      <h1 class="text-3xl font-bold underline">
-        Hello world!
-      </h1>
+
+<body id="body">
+  <div class="mainContainer">
+    <div class="block">
+    </div>
+    <div class="primaryContainer" id="primaryContainer">
+
+      <div class="title">
+        <h1>SplittyPie App</h1>
+      </div>
+      <form class="formulario" id="formEvent">
+        <div class="event-form">
+          <label class="label" for="eventName" name="event">Evento</label>
+          <input type="text" id="eventName" placeholder="Ejemplo: Partido futbol" class="input">
+        </div>
+        <div class="participants-list" id="participants-list">
+          <label class="label" for="participants">Participantes</label>
+        </div>
+        <div class="add-participant">
+          <input type="text" id="inputName" placeholder="Ejemplo: Juan" class="inputName">
+          <button type="button" id="addParticipant" class="addParticipantButton">Añadir</button>
+        </div>
+
+        <div class="buttons">
+          <button type="submit" class="newEventButton" >Crear Evento</button>
+          <button type="submit" class="enterEvent" id="enterEvent">Entrar a evento</button>
+        </div>
+      </form>
+    </div>
   </div>
+  <div id="formContainer"></div>
   <script src="./app.js"></script>
+
 </body>
+
 </html>

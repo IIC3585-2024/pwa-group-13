@@ -1,3 +1,225 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+.title{
+  color: white;
+}
+
+.mainContainer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  z-index: 10;
+}
+
+.formulario{
+  display: flex;
+  flex-direction: column;
+  width: 40%;
+  box-shadow: 0 0 10px rgb(85, 85, 85);
+  border-radius: 10px;
+  padding: 5%;
+  background-color: rgb(237, 242, 246);
+}
+
+.billsContainer{
+  display: flex;
+  flex-direction: column;
+  width: 40%;
+  box-shadow: 0 0 10px rgb(85, 85, 85);
+  border-radius: 10px;
+  padding: 5%;
+  background-color: rgb(237, 242, 246);
+  border-radius: 10px;
+  margin-top: 5%;
+}
+
+.bills{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 5px;
+  border-bottom: 1px solid rgb(85, 85, 85);
+  font-weight: bold;
+
+}
+
+.event-form{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.event-form input{
+  width: 80%;
+  padding: 5px;
+  margin: 5px;
+  border-radius: 5px;
+  border: none;
+}
+
+.event-form label{
+  width: 20%;
+  padding: 5px;
+  margin: 5px;
+  border-radius: 5px;
+  border: none;
+  font-weight: bold;
+}
+
+.block{
+  position: absolute;
+  height: 20vh;
+  background-color: rgb(0, 140, 255);
+  width: 100%;
+  top: 0;
+  z-index: 0;
+}
+
+.primaryContainer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  z-index: 10;
+}
+
+.participants-list{
+  display: flex;
+  align-items: start;
+  flex-direction: column;
+  margin-top: 5%;
+
+
+
+}
+
+.participants-list label{
+  background-color: rgb(85, 85, 85);
+  color: white;
+  border-radius: 10px;
+  width: auto;
+  padding: 3px;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+.participant {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+  padding: 5px;
+  border-bottom: 1px solid rgb(85, 85, 85);
+  font-weight: bold;
+}
+
+.participant .delete{
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  width: 40px;
+  height: 40px;
+}
+
+.newEventButton{
+  background-color: rgb(0, 140, 255);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  width: 100%;
+  margin: 5px;
+  display: flex;
+  align-self: center;
+  margin-top: 5%;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.balance{
+  background-color: rgb(85, 85, 85);
+  color: white;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 3%;
+  padding-left: 3%;
+  padding-right: 3%;
+  border-radius: 10px;
+}
+
+.participantBalance{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  font-weight: bold;
+  padding: 2%;
+  background-color: white;
+  border-radius: 10px;
+  color: black;
+  margin-top: 2%;
+
+}
+
+#newPayment{
+  position: absolute;
+  bottom: 2%;
+  right: 2%;
+  width: 60px;
+  height: 60px;
+  font-size: 40px;
+  border-radius: 50%;
+}
+
+.amount{
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  background-color: red;
+}
+
+.amount-green{
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  background-color: green;
+}
+
+.transaction{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 5px;
+  border-bottom: 1px solid rgb(85, 85, 85);
+  font-weight: bold;
+  align-items: center;
+}
+
+body{
+  margin: 0;
+}
+
+input{
+  margin-top: 2%;
+}
+
+button{
+  margin-top: 2%;
+}
+
+
+@media screen and (max-width: 600px) {
+  .formulario{
+    width: 80%;
+  }
+
+  .billsContainer{
+    width: 80%;
+  }
+}
