@@ -9,12 +9,6 @@
   <link rel="stylesheet" href="/styles.css">
 
   <title>Spliti</title>
-  <script src="./db.js" defer></script>
-  <script src="./spliti.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-messaging.js"></script>
-  <script type="module" src="./app.js" defer></script>
-<!--  <script type="module" src="./firebase.js" defer></script> -->
 </head>
 
 <body id="body">
@@ -22,7 +16,7 @@
     <div class="block">
     </div>
     <div class="primaryContainer" id="primaryContainer">
-
+      
       <div class="title">
         <h1>SplittyPie App</h1>
       </div>
@@ -38,7 +32,7 @@
           <input type="text" id="inputName" placeholder="Ejemplo: Juan" class="inputName">
           <button type="button" id="addParticipant" class="addParticipantButton">Añadir</button>
         </div>
-
+        
         <div class="buttons">
           <button type="submit" class="newEventButton" >Crear Evento</button>
           <button type="submit" class="enterEvent" id="enterEvent">Entrar a evento</button>
@@ -49,6 +43,9 @@
   <div id="formContainer"></div>
   <button id="requestPermission">Obtener permisos</button>
   <p id="token"></p>
+  <script type="module" src="./app.js"></script>
+  <script type="module" src="./db.js" defer></script>
+  <script type="module" src="./spliti.js" defer></script>
 </body>
 
 <script src="//cdn.jsdelivr.net/npm/eruda"></script>
