@@ -5,6 +5,8 @@ const staticAssets = [
   './app.js',
   './spliti.js',
   './db.js',
+  './firebase-messaging-sw.js',
+  './serviceworker.js',
   // Íconos Android comunes
   './images/icons/android/android-launchericon-192-192.png',
   './images/icons/android/android-launchericon-512-512.png',

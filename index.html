@@ -11,6 +11,10 @@
   <title>Spliti</title>
   <script src="./db.js" defer></script>
   <script src="./spliti.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-messaging.js"></script>
+  <script type="module" src="./app.js" defer></script>
+<!--  <script type="module" src="./firebase.js" defer></script> -->
 </head>
 
 <body id="body">
@@ -43,8 +47,10 @@
     </div>
   </div>
   <div id="formContainer"></div>
-  <script src="./app.js"></script>
-
+  <button id="requestPermission">Obtener permisos</button>
+  <p id="token"></p>
 </body>
 
+<script src="//cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
 </html>

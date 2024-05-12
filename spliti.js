@@ -16,6 +16,21 @@ function reloadHomePage() {
 
 document.addEventListener("DOMContentLoaded", function () {
 
+  const requestPermissionButton = document.getElementById("requestPermission");
+  const tokenP = document.getElementById("token");
+
+  requestPermissionButton.addEventListener("click", function () {
+    if (Notification.permission === "granted") {
+      window.obtenerToken((token) => {
+        tokenP.textContent = `Tu token es: ${token?.token}`;
+      });
+    } else {
+      Notification.requestPermission().then(function (result) {
+        console.log(result);
+      });
+    }
+  });
+
   var bills = []
   window.obtenerBills(function (billsDB) {
     // console.log("bills desde IndexDB");
@@ -84,23 +99,51 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
 
-  function pay(amount, bill, reason) {
-    bill.participants[0].paid += amount;
+  function pay(participantIndex, amount, bill) {
+    console.log("Paying", amount);
+    bill.participants[participantIndex].paid += amount;
     bill.participants.map(p => {
-      if (p.name !== bill.participants[0].name) {
-        p.debt += Math.ceil(amount / (bill.participants.length - 1));
-        const newTransaction = {
-          from: p.name,
-          to: bill.participants[0].name,
-          amount: Math.ceil(amount / (bill.participants.length - 1)),
-          reason: reason
-        };
-        bill.transactions.push(newTransaction);
+      if (p.name !== bill.participants[participantIndex].name) {
+        p.debt += amount / (bill.participants.length - 1);
+        // const newTransaction = {
+        //   from: p.name,
+        //   to: bill.participants[participantIndex].name,
+        //   amount: amount / (bill.participants.length - 1),
+        //   reason: reason
+        // };
+        // bill.transactions.push(newTransaction);
+      }
+    });
+    calculateBalance(bill);
+    const newTransaction = [];
+    const participant = bill.participants.map(p => {
+      return {"name": p.name, "balance": p.balance}
+    });
+    participant.sort((a, b) => a.balance - b.balance);
+    console.log(participant)
+    let i = 0;
+    let j = participant.length - 1;
+    while (i < j) {
+      if (participant[i].balance < 0 && participant[j].balance > 0) {
+        const amountToPay = Math.min(-participant[i].balance, participant[j].balance);
+        participant[i].balance += amountToPay;
+        participant[j].balance -= amountToPay;
+        newTransaction.push({
+          to: participant[j].name,
+          from: participant[i].name,
+          amount: amountToPay
+        });
+      }
+      if (participant[i].balance === 0) {
+        i++;
+      }
+      if (participant[j].balance === 0) {
+        j--;
       }
     }
-    );
+    bill.transactions = newTransaction;
+
     bill.amount += amount;
-    calculateBalance(bill);
     window.guardarBill(bill, function () {
       // console.log("Bill guardado");
     }
@@ -217,10 +260,11 @@ document.addEventListener("DOMContentLoaded", function () {
       selectedBill = selectBill.value;
 
       const billContainer = document.getElementById("bills");
+      console.log(bill);
 
       billContainer.innerHTML = `
           <h3>${bill.name}</h3>
-          <p>Amount: $${bill.amount}</p>
+          <!-- <p>Amount: $${bill.amount.toFixed(2)}</p> -->
           <div class="balance">
             <h5>Balance</h5>
             ${bill.participants.map(participant =>
@@ -229,7 +273,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   ${participant.name}
                 </div>
                 ${participant.balance >= 0 ? "<div class='amount-green'>" : "<div class='amount negative'>"}
-                  $${participant.balance}
+                  $${participant.balance.toFixed(2)}
                 </div>
               </div>
               `).join("")
@@ -240,7 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <h5>Transactions</h5>
             ${bill.transactions.map((transaction, index) =>
           `<div class="transaction">
-        <p>${transaction.from} debe ${transaction.amount} a ${transaction.to} por ${transaction.reason}</p>
+        <p>${transaction.from} debe ${transaction.amount.toFixed(2)} a ${transaction.to}</p>
         <button class="completeTransaction" data-bill-index="${selectBill.value}" data-transaction-index="${index}">Pagar</button>
               </div>
               `).join("")
@@ -270,20 +314,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const newPaymentButton = document.getElementById("newPayment");
 
     newPaymentButton.addEventListener("click", function () {
+      const Select = '<select id="selectParticipant">' + bills[selectedBill].participants.map((participant, index) => `<option value="${index}">${participant.name}</option>`).join("") + '</select>';
       document.getElementById("primaryContainer").innerHTML = `
     <div class="billsContainer" id="newPaymentContainer">
           <h2>Nuevo Pago</h2>
-          <p>Pagado por: ${bills[selectedBill].participants[0].name}</p>
+          <div>
+            <p>Pagado por:</p>
+            ${Select}
+          </div>
           <input type="text" placeholder="Cantidad" id="amount">
-          <input type="text" placeholder="Motivo" id="reason">
           <button type="submit">Confirmar Pago</button>
     </div>`;
 
       const amountInput = document.getElementById("amount");
       const confirmPaymentButton = document.querySelector("#newPaymentContainer button");
-      const reasonInput = document.getElementById("reason");
+      const participantSelect = document.getElementById("selectParticipant");
       confirmPaymentButton.addEventListener("click", function () {
-        bills[selectedBill] = pay(parseInt(amountInput.value), bills[selectedBill], reasonInput.value);
+        const amount = parseInt(amountInput.value);
+        bills[selectedBill] = pay(participantSelect.value, amount - (amount/bills[selectedBill].participants.length), bills[selectedBill]);
         // console.log('Acaaa')
         renderBills();
         renderNewPayment();

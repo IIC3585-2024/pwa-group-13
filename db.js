@@ -21,6 +21,10 @@ request.onupgradeneeded = function (event) {
   store.createIndex("transactions", "transactions", { unique: false });
   store.createIndex("current", "current", { unique: false });
 
+  const tokens = db.createObjectStore("tokens", { keyPath: "id" });
+  tokens.createIndex("id", "id", { unique: true });
+  tokens.createIndex("token", "token", { unique: false });
+
 }
 
 request.onsuccess = function () {
@@ -161,3 +165,28 @@ window.agregarTransaccion = function agregarTransaccion(bill, transaction, callb
   }
 }
 
+window.obtenerToken = function obtenerToken(callback){
+  const request = indexedDB.open("SplitDB", 1);
+
+  request.onerror = function(event) {
+    console.log("Error opening database", event);
+  };
+
+  request.onsuccess = function(event) {
+    const db = event.target.result;
+    const tx = db.transaction("tokens", "readonly");
+    const store = tx.objectStore("tokens");
+
+    const getTokenRequest = store.get("userToken");
+
+    getTokenRequest.onerror = function(event) {
+      console.log("Error getting token", event);
+    };
+
+    getTokenRequest.onsuccess = function(event) {
+      let token = event.target.result;
+      callback(token);
+      db.close();
+    };
+  };
+}
