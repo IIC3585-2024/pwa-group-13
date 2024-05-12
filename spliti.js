@@ -14,17 +14,21 @@ function reloadHomePage() {
   }
 }
 
+
 document.addEventListener("DOMContentLoaded", function () {
 
+  // Mostrar y copiar el token para notificaciones push
   const requestPermissionButton = document.getElementById("requestPermission");
   const tokenP = document.getElementById("token");
 
   requestPermissionButton.addEventListener("click", function () {
     if (Notification.permission === "granted") {
-      window.obtenerToken((token) => {
+      window.obtenerToken(async (token) => {
         tokenP.textContent = `Tu token es: ${token?.token}`;
+        navigator.clipboard.writeText(token?.token);
       });
     } else {
+      navigator.clipboard.writeText("No hay token");
       Notification.requestPermission().then(function (result) {
         console.log(result);
       });
@@ -33,7 +37,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   var bills = []
   window.obtenerBills(function (billsDB) {
-    // console.log("bills desde IndexDB");
     bills = billsDB;
   });
   var selectedBill = -1;
@@ -61,16 +64,17 @@ document.addEventListener("DOMContentLoaded", function () {
   const enterEventButton = document.getElementById("enterEvent");
 
   addParticipantButton.addEventListener("click", function () {
-    const inputName = document.getElementById("inputName");
-    const name = inputName.value;
     const newParticipant = document.createElement("div");
     newParticipant.className = "participant";
     newParticipant.innerHTML = `
-          <p>${name}</p>
-          <button type="button" class="delete">X</button>
+      <input class="w-full px-3 mr-2 rounded-md" type="text" id="friendName" placeholder="Nombre de tu amigo" >
+      <button type="button" class="delete">X</button>
       `;
-    inputName.value = "";
-    participantsContainer.appendChild(newParticipant);
+    participantsContainer.appendChild(newParticipant)
+    // Añadir un manejador de eventos para el botón de eliminación
+    newParticipant.querySelector('.delete').addEventListener('click', function() {
+      newParticipant.remove();
+    });
   }
   );
 
@@ -176,6 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   enterEventButton.addEventListener("click", function () {
+    console.log("Enter event");
     renderBills();
     renderNewPayment();
   });
@@ -183,15 +188,16 @@ document.addEventListener("DOMContentLoaded", function () {
   eventForm.addEventListener("submit", function (event) {
     event.preventDefault();
     if (eventForm.eventName.value === "") {
-      alert("Ingresa un nombre válido");
-      // console.log("Ingresa un nombre válido");
+      alert("Dale un nombre al evento");
       return;
     }
-    const participants = document.querySelectorAll(".participant p");
-    if (participants.length < 2) {
-      alert("Ingresa al menos dos participantes");
-      // console.log("Ingresa al menos dos participantes");
-      return;
+    const participants = document.querySelectorAll(".participant input");
+
+    for (let i = 0; i < participants.length; i++) {
+      if (participants[i].value === "") {
+        alert("No puedes dejar nombres vacíos");
+        return;
+      }
     }
     const newBill = {
       name: eventForm.eventName.value,
@@ -202,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
     participants.forEach(participant => {
       newBill.participants.push({
-        name: participant.textContent,
+        name: participant.value,
         paid: 0,
         debt: 0,
         balance: 0
@@ -214,127 +220,147 @@ document.addEventListener("DOMContentLoaded", function () {
     bills.push(newBill);
 
     renderBills();
+    console.log("Creating new event")
     renderNewPayment();
   });
-
-  function renderBills() {
-
-    // console.log(bills);
-    eventForm.reset();
-    participantsContainer.innerHTML = ""
-
-    document.getElementById("primaryContainer").innerHTML = `
-    <div class="billsContainer" id="billsContainer">
-          <h2>Bills</h2>
-          <div id="bills">
+  function renderBillsBalance(selectedBill = null) {
+    if (selectedBill === null) return;
+    const bill = bills[selectedBill];
+    const billContainer = document.getElementById("bills");
+    billContainer.innerHTML = `
+      <h3 class="font-bold text-center text-xl">${bill.name}</h3>
+      <div class="balance">
+        <h5>Balance</h5>
+        ${bill.participants.map(participant =>
+          `<div class="participantBalance">
+            <div>
+              ${participant.name}
+            </div>
+            ${participant.balance >= 0 ? "<div class='amount-green'>" : "<div class='amount negative'>"}
+              $${participant.balance.toFixed(2)}
+            </div>
           </div>
-          <button class="goBack" onClick="reloadHomePage()">Volver</button>
-          <button class="newPayment" id="newPayment">
-          +
-          </button>
-    </div>`;
-    const billsContainer = document.getElementById("bills");
-    billsContainer.innerHTML = "";
-
-    // console.log("selectedBill", selectedBill);
-    const selectBill = document.createElement("select");
-    selectBill.value = selectedBill;
-    selectBill.innerHTML = `
-          <option value="">Select bill</option>
-          ${bills.map((bill, index) => `<option value="${index}" ${index == selectedBill ? 'selected' : ''}>${bill.name}</option>`).join("")}
-      `;
-    // console.log("selectedBill", selectedBill);
-
-    billsContainer.appendChild(selectBill);
-
-    selectBill.addEventListener("change", function () {
-      const bill = bills[selectBill.value];
-      bills.map(bill => {
-        if (bill !== bills[selectBill.value]) {
-          bill.current = false;
+          `).join("")
         }
-        else {
-          bill.current = true;
-        }
-      });
-      selectedBill = selectBill.value;
+      </div>
 
-      const billContainer = document.getElementById("bills");
-      console.log(bill);
-
-      billContainer.innerHTML = `
-          <h3>${bill.name}</h3>
-          <!-- <p>Amount: $${bill.amount.toFixed(2)}</p> -->
-          <div class="balance">
-            <h5>Balance</h5>
-            ${bill.participants.map(participant =>
-        `<div class="participantBalance">
-                <div>
-                  ${participant.name}
-                </div>
-                ${participant.balance >= 0 ? "<div class='amount-green'>" : "<div class='amount negative'>"}
-                  $${participant.balance.toFixed(2)}
-                </div>
-              </div>
-              `).join("")
-        }
-          </div>
-
-          <div class="transactions">
-            <h5>Transactions</h5>
-            ${bill.transactions.map((transaction, index) =>
+      <div class="transactions">
+        <h5 class="font-semibold text-center my-4">
+          Transactions
+        </h5>
+        ${bill.transactions.map((transaction, index) =>
           `<div class="transaction">
-        <p>${transaction.from} debe ${transaction.amount.toFixed(2)} a ${transaction.to}</p>
-        <button class="completeTransaction" data-bill-index="${selectBill.value}" data-transaction-index="${index}">Pagar</button>
-              </div>
-              `).join("")
-        }
+            <p class="font-normal">${transaction.from} debe ${transaction.amount.toFixed(2)} a ${transaction.to}</p>
+            <button class="completeTransaction bg-blue-300 rounded-md p-1" data-bill-index="${selectedBill}" data-transaction-index="${index}">Pagar</button>
           </div>
+          `).join("")
+        }
+      </div>
+      `;
 
-
-
-          `;
       document.querySelectorAll(".completeTransaction").forEach(button => {
         button.addEventListener("click", function () {
           const billIndex = this.getAttribute("data-bill-index");
           const transactionIndex = this.getAttribute("data-transaction-index");
           eliminarBill(bills[billIndex], bills[billIndex].transactions[transactionIndex]);
-          renderBills();
-          renderNewPayment();
+          renderBillsBalance(selectedBill);
+          renderNewPayment(selectedBill);
         });
       });
-    });
-    if (selectedBill != -1) {
-      selectBill.dispatchEvent(new Event('change'));
-    }
   }
 
-  function renderNewPayment() {
 
+  function renderBills(selectedBill = null) {
+
+    eventForm.reset();
+    participantsContainer.innerHTML = ""
+
+    document.getElementById("primaryContainer").innerHTML = `
+    <div class="billsContainer" id="billsContainer">
+          <h1 class="text-center text-4xl">Bills</h2>
+          <div id="bills">
+          </div>
+          <button class="goBack" id="goBack">Volver</button>
+          <button class="newPayment bg-blue-300 text-center rounded-full" id="newPayment">
+          +
+          </button>
+    </div>`;
+
+    const goBackButton = document.getElementById("goBack");
+    goBackButton.addEventListener("click", function () {
+      reloadHomePage()
+    });
+
+    if (selectedBill !== null) {
+      renderBillsBalance(selectedBill);
+      return;
+    }
+    
+    const billsContainer = document.getElementById("bills");
+    if (bills.length === 0) {
+      billsContainer.innerHTML = "<p>No hay eventos</p>";
+      return;
+    }
+    billsContainer.innerHTML = "";
+
+    // Create a list of bills with buttons to redirect to each bill
+    const billList = document.createElement("ol");
+    billList.className = "billList list-decimal";
+    bills.map((bill, index) => {
+      const billItem = document.createElement("li");
+      billItem.className = "font-semibold text-center my-4 text-blue-500";
+      billItem.innerHTML = `
+          <button class="billButton" data-bill-index="${index}">${bill.name}</button>
+      `;
+      billList.appendChild(billItem);
+    });
+    billsContainer.appendChild(billList);
+
+    // Add event listeners to each bill button
+
+    document.querySelectorAll(".billButton").forEach(button => {
+      button.addEventListener("click", function () {
+        selectedBill = this.getAttribute("data-bill-index");
+        renderBillsBalance(selectedBill);
+        renderNewPayment(selectedBill);
+      });
+    });
+  }
+
+  function renderNewPayment(selectedBill) {
+    console.log(bills, selectedBill)
+    console.log(bills[selectedBill])
+    if (selectedBill === undefined || selectedBill === null) return;
     const newPaymentButton = document.getElementById("newPayment");
 
     newPaymentButton.addEventListener("click", function () {
-      const Select = '<select id="selectParticipant">' + bills[selectedBill].participants.map((participant, index) => `<option value="${index}">${participant.name}</option>`).join("") + '</select>';
+      const Select = '<select id="selectParticipant" class="py-2 w-full">' + bills[selectedBill].participants.map((participant, index) => `<option value="${index}">${participant.name}</option>`).join("") + '</select>';
       document.getElementById("primaryContainer").innerHTML = `
     <div class="billsContainer" id="newPaymentContainer">
-          <h2>Nuevo Pago</h2>
-          <div>
-            <p>Pagado por:</p>
+          <h2 class="font-bold text-2xl">Nuevo Pago</h2>
+          <div class="flex flex-row align-center mb-2 rounded-md">
+            <p class="pr-2 my-auto">Paga</p>
             ${Select}
           </div>
-          <input type="text" placeholder="Cantidad" id="amount">
-          <button type="submit">Confirmar Pago</button>
+          <input class="rounded-md py-2 px-1 mb-2" type="text" placeholder="Cantidad" id="amount">
+          <button type="button" class="button bg-green-300 rounded-md py-2" id="confirmButton">Confirmar Pago</button>
+          <button type="button" id="volver" class="text-blue-500">Volver</button>
     </div>`;
 
       const amountInput = document.getElementById("amount");
-      const confirmPaymentButton = document.querySelector("#newPaymentContainer button");
+      const confirmPaymentButton = document.getElementById("confirmButton");
       const participantSelect = document.getElementById("selectParticipant");
+      const volverButton = document.getElementById("volver");
+      volverButton.addEventListener("click", function () {
+        renderBills(selectedBill);
+        renderNewPayment(selectedBill);
+      });
       confirmPaymentButton.addEventListener("click", function () {
         const amount = parseInt(amountInput.value);
         bills[selectedBill] = pay(participantSelect.value, amount - (amount/bills[selectedBill].participants.length), bills[selectedBill]);
         // console.log('Acaaa')
-        renderBills();
-        renderNewPayment();
+        renderBills(selectedBill);
+        renderNewPayment(selectedBill);
       });
     }
     );
